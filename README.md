@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # short_url
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# short_url
+>>>>>>> a7d0366efc4a4a6ad60cf09689384d82d01bb714
