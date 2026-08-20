@@ -1,4 +1,4 @@
-# Mengabaikan file platform native dari deteksi bahasa GitHub
+# Mengabaikan file platform native dari deteksi bahasa di Github
 windows/* linguist-vendored
 linux/* linguist-vendored
 macos/* linguist-vendored
