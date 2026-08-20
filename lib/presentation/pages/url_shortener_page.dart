@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../domain/repositories/url_shortener_repository.dart';
 import '../../data/models/short_url_model.dart';
@@ -168,33 +169,57 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor:
-                              colorScheme.primaryContainer.withValues(alpha: 0.6),
-                          child: Icon(
-                            Icons.link,
-                            color: colorScheme.primary,
-                            size: 20,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: colorScheme.primaryContainer
+                                  .withValues(alpha: 0.6),
+                              child: Icon(
+                                Icons.link,
+                                color: colorScheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              item.shortUrl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            subtitle: Text(
+                              item.originalUrl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: IconButton(
+                              onPressed: () => _copyToClipboard(item.shortUrl),
+                              icon: const Icon(Icons.copy_rounded),
+                              tooltip: 'Salin link',
+                              color: colorScheme.primary,
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          item.shortUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          item.originalUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: IconButton(
-                          onPressed: () => _copyToClipboard(item.shortUrl),
-                          icon: const Icon(Icons.copy_rounded),
-                          tooltip: 'Salin link',
-                          color: colorScheme.primary,
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 4, 0, 20),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: QrImageView(
+                                  data: item.shortUrl,
+                                  size: 150,
+                                  backgroundColor: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
