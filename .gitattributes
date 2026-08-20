@@ -1,8 +1,7 @@
-# Mengabaikan file platform native dari deteksi bahasa di Github
-windows/* linguist-vendored
-linux/* linguist-vendored
-macos/* linguist-vendored
-android/* linguist-vendored
-ios/* linguist-vendored
-web/* linguist-vendored
-build/* linguist-vendored
+# Menyuruh GitHub mengabaikan folder bawaan Flutter
+android/** linguist-generated=true
+ios/** linguist-generated=true
+linux/** linguist-generated=true
+macos/** linguist-generated=true
+windows/** linguist-generated=true
+web/** linguist-generated=true
