@@ -1,0 +1,1 @@
+Halo, AI Agent OpenCode berhasil terhubung dan aktif di project Flutter ini!
