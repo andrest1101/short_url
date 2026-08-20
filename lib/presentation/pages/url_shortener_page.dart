@@ -15,7 +15,7 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
   final TextEditingController _urlController = TextEditingController();
   final UrlShortenerRepository _repository = UrlShortenerRepository();
 
-  String? _shortUrl;
+  final List<ShortUrlModel> _history = [];
 
   void _shortenUrl() {
     final input = _urlController.text.trim();
@@ -27,13 +27,12 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
     }
     final ShortUrlModel result = _repository.shorten(input);
     setState(() {
-      _shortUrl = result.shortUrl;
+      _history.insert(0, result);
     });
   }
 
-  void _copyToClipboard() {
-    if (_shortUrl == null) return;
-    Clipboard.setData(ClipboardData(text: _shortUrl!));
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Link pendek disalin')),
     );
@@ -134,45 +133,73 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              if (_shortUrl != null)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer
-                        .withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: colorScheme.primary.withValues(alpha: 0.4),
-                      width: 1.2,
+              if (_history.isNotEmpty) ...[
+                const SizedBox(height: 28),
+                Row(
+                  children: [
+                    Icon(Icons.history, color: colorScheme.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Riwayat',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: colorScheme.primary),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SelectableText(
-                          _shortUrl!,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '(${_history.length})',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _history.length,
+                  itemBuilder: (context, index) {
+                    final ShortUrlModel item = _history[index];
+                    return Card(
+                      elevation: 2,
+                      shadowColor: Colors.black12,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor:
+                              colorScheme.primaryContainer.withValues(alpha: 0.6),
+                          child: Icon(
+                            Icons.link,
+                            color: colorScheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          item.shortUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          item.originalUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: IconButton(
+                          onPressed: () => _copyToClipboard(item.shortUrl),
+                          icon: const Icon(Icons.copy_rounded),
+                          tooltip: 'Salin link',
+                          color: colorScheme.primary,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: _copyToClipboard,
-                        icon: const Icon(Icons.copy_rounded),
-                        tooltip: 'Salin link',
-                        color: colorScheme.primary,
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
+              ],
               const SizedBox(height: 16),
             ],
           ),
