@@ -1,0 +1,8 @@
+# Mengabaikan file platform native dari deteksi bahasa GitHub
+windows/* linguist-vendored
+linux/* linguist-vendored
+macos/* linguist-vendored
+android/* linguist-vendored
+ios/* linguist-vendored
+web/* linguist-vendored
+build/* linguist-vendored
