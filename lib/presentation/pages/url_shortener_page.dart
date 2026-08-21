@@ -159,65 +159,9 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
                   itemCount: history.length,
                   itemBuilder: (context, index) {
                     final ShortUrlEntity item = history[index];
-                    return Card(
-                      elevation: 2,
-                      shadowColor: Colors.black12,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: colorScheme.primaryContainer
-                                  .withValues(alpha: 0.6),
-                              child: Icon(
-                                Icons.link,
-                                color: colorScheme.primary,
-                                size: 20,
-                              ),
-                            ),
-                            title: Text(
-                              item.shortUrl,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            subtitle: Text(
-                              item.originalUrl,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: IconButton(
-                              onPressed: () => _copyToClipboard(item.shortUrl),
-                              icon: const Icon(Icons.copy_rounded),
-                              tooltip: 'Salin link',
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 4, 0, 20),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Center(
-                                child: QrImageView(
-                                  data: item.shortUrl,
-                                  size: 150,
-                                  backgroundColor: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    return _HistoryItemCard(
+                      item: item,
+                      onCopy: () => _copyToClipboard(item.shortUrl),
                     );
                   },
                 ),
@@ -226,6 +170,106 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HistoryItemCard extends StatefulWidget {
+  final ShortUrlEntity item;
+  final VoidCallback onCopy;
+
+  const _HistoryItemCard({
+    required this.item,
+    required this.onCopy,
+  });
+
+  @override
+  State<_HistoryItemCard> createState() => _HistoryItemCardState();
+}
+
+class _HistoryItemCardState extends State<_HistoryItemCard> {
+  bool _showQr = false;
+
+  void _toggleQr() {
+    setState(() => _showQr = !_showQr);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor:
+                  colorScheme.primaryContainer.withValues(alpha: 0.6),
+              child: Icon(
+                Icons.link,
+                color: colorScheme.primary,
+                size: 20,
+              ),
+            ),
+            title: Text(
+              widget.item.shortUrl,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              widget.item.originalUrl,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: _toggleQr,
+                  icon: Icon(_showQr ? Icons.qr_code_2 : Icons.qr_code),
+                  tooltip: _showQr ? 'Sembunyikan QR' : 'Tampilkan QR',
+                  color: _showQr
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                ),
+                IconButton(
+                  onPressed: widget.onCopy,
+                  icon: const Icon(Icons.copy_rounded),
+                  tooltip: 'Salin link',
+                  color: colorScheme.primary,
+                ),
+              ],
+            ),
+          ),
+          if (_showQr)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 4, 0, 20),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: QrImageView(
+                    data: widget.item.shortUrl,
+                    size: 150,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
