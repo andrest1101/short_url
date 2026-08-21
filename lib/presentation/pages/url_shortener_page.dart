@@ -24,7 +24,17 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
       );
       return;
     }
-    ref.read(urlHistoryNotifierProvider.notifier).shorten(input);
+    final bool success =
+        ref.read(urlHistoryNotifierProvider.notifier).shorten(input);
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'URL tidak valid. Gunakan format https://... atau www...',
+          ),
+        ),
+      );
+    }
   }
 
   void _copyToClipboard(String text) {

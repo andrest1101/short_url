@@ -8,6 +8,7 @@ import 'domain/repositories/url_repository.dart';
 import 'domain/usecases/delete_history_usecase.dart';
 import 'domain/usecases/get_history_usecase.dart';
 import 'domain/usecases/shorten_url_usecase.dart';
+import 'domain/utils/url_validator.dart';
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError(
@@ -30,8 +31,15 @@ final urlRepositoryProvider = Provider<IUrlRepository>((ref) {
   );
 });
 
+final urlValidatorProvider = Provider<UrlValidator>((ref) {
+  return const UrlValidator();
+});
+
 final shortenUrlUseCaseProvider = Provider<ShortenUrlUseCase>((ref) {
-  return ShortenUrlUseCase(ref.watch(urlRepositoryProvider));
+  return ShortenUrlUseCase(
+    ref.watch(urlRepositoryProvider),
+    ref.watch(urlValidatorProvider),
+  );
 });
 
 final getHistoryUseCaseProvider = Provider<GetHistoryUseCase>((ref) {

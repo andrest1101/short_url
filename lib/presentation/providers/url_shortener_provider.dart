@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/short_url_entity.dart';
+import '../../domain/exceptions/invalid_url_exception.dart';
 import '../../domain/usecases/delete_history_usecase.dart';
 import '../../domain/usecases/get_history_usecase.dart';
 import '../../domain/usecases/shorten_url_usecase.dart';
@@ -18,10 +19,15 @@ class UrlHistoryNotifier extends Notifier<List<ShortUrlEntity>> {
     return useCase();
   }
 
-  void shorten(String originalUrl) {
+  bool shorten(String originalUrl) {
     final ShortenUrlUseCase useCase = ref.read(shortenUrlUseCaseProvider);
-    final ShortUrlEntity result = useCase(originalUrl);
-    state = [result, ...state];
+    try {
+      final ShortUrlEntity result = useCase(originalUrl);
+      state = [result, ...state];
+      return true;
+    } on InvalidUrlException {
+      return false;
+    }
   }
 
   void delete(ShortUrlEntity item) {
