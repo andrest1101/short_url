@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../domain/repositories/url_shortener_repository.dart';
-import '../../data/models/short_url_model.dart';
+import '../../domain/entities/short_url_entity.dart';
+import '../providers/url_shortener_provider.dart';
 
-class UrlShortenerPage extends StatefulWidget {
+class UrlShortenerPage extends ConsumerStatefulWidget {
   const UrlShortenerPage({super.key});
 
   @override
-  State<UrlShortenerPage> createState() => _UrlShortenerPageState();
+  ConsumerState<UrlShortenerPage> createState() => _UrlShortenerPageState();
 }
 
-class _UrlShortenerPageState extends State<UrlShortenerPage> {
+class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
   final TextEditingController _urlController = TextEditingController();
-  final UrlShortenerRepository _repository = UrlShortenerRepository();
-
-  final List<ShortUrlModel> _history = [];
 
   void _shortenUrl() {
     final input = _urlController.text.trim();
@@ -26,10 +24,7 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
       );
       return;
     }
-    final ShortUrlModel result = _repository.shorten(input);
-    setState(() {
-      _history.insert(0, result);
-    });
+    ref.read(urlHistoryNotifierProvider.notifier).shorten(input);
   }
 
   void _copyToClipboard(String text) {
@@ -48,6 +43,8 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final List<ShortUrlEntity> history =
+        ref.watch(urlHistoryNotifierProvider);
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -134,7 +131,7 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
                   ),
                 ),
               ),
-              if (_history.isNotEmpty) ...[
+              if (history.isNotEmpty) ...[
                 const SizedBox(height: 28),
                 Row(
                   children: [
@@ -148,7 +145,7 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '(${_history.length})',
+                      '(${history.length})',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -159,9 +156,9 @@ class _UrlShortenerPageState extends State<UrlShortenerPage> {
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _history.length,
+                  itemCount: history.length,
                   itemBuilder: (context, index) {
-                    final ShortUrlModel item = _history[index];
+                    final ShortUrlEntity item = history[index];
                     return Card(
                       elevation: 2,
                       shadowColor: Colors.black12,
