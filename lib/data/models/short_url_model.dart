@@ -1,9 +1,8 @@
-class ShortUrlModel {
-  final String originalUrl;
-  final String shortUrl;
+import '../../domain/entities/short_url_entity.dart';
 
+class ShortUrlModel extends ShortUrlEntity {
   const ShortUrlModel({
-    required this.originalUrl,
-    required this.shortUrl,
+    required super.originalUrl,
+    required super.shortUrl,
   });
 }
