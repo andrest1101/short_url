@@ -34,6 +34,35 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
     );
   }
 
+  void _onHistoryDismissed(ShortUrlEntity item) {
+    ref.read(urlHistoryNotifierProvider.notifier).delete(item);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Riwayat dihapus')),
+    );
+  }
+
+  Widget _buildDismissBackground(
+    ColorScheme colorScheme,
+    Alignment alignment,
+  ) {
+    return Container(
+      alignment: alignment,
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.error,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Icon(
+          Icons.delete_rounded,
+          color: colorScheme.onError,
+          size: 28,
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _urlController.dispose();
@@ -159,9 +188,22 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
                   itemCount: history.length,
                   itemBuilder: (context, index) {
                     final ShortUrlEntity item = history[index];
-                    return _HistoryItemCard(
-                      item: item,
-                      onCopy: () => _copyToClipboard(item.shortUrl),
+                    return Dismissible(
+                      key: ValueKey<String>(item.shortUrl),
+                      direction: DismissDirection.horizontal,
+                      background: _buildDismissBackground(
+                        colorScheme,
+                        Alignment.centerLeft,
+                      ),
+                      secondaryBackground: _buildDismissBackground(
+                        colorScheme,
+                        Alignment.centerRight,
+                      ),
+                      onDismissed: (_) => _onHistoryDismissed(item),
+                      child: _HistoryItemCard(
+                        item: item,
+                        onCopy: () => _copyToClipboard(item.shortUrl),
+                      ),
                     );
                   },
                 ),

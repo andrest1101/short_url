@@ -4,4 +4,6 @@ abstract interface class IUrlRepository {
   ShortUrlEntity shortenUrl(String originalUrl);
 
   List<ShortUrlEntity> loadHistory();
+
+  void deleteHistory(String shortUrl);
 }

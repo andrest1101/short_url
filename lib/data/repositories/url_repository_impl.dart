@@ -21,4 +21,9 @@ class UrlRepositoryImpl implements IUrlRepository {
 
   @override
   List<ShortUrlEntity> loadHistory() => _localDataSource.loadHistory();
+
+  @override
+  void deleteHistory(String shortUrl) {
+    unawaited(_localDataSource.deleteUrl(shortUrl));
+  }
 }

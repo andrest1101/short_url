@@ -5,6 +5,7 @@ import 'data/datasources/mock_url_data_source.dart';
 import 'data/datasources/url_local_data_source.dart';
 import 'data/repositories/url_repository_impl.dart';
 import 'domain/repositories/url_repository.dart';
+import 'domain/usecases/delete_history_usecase.dart';
 import 'domain/usecases/get_history_usecase.dart';
 import 'domain/usecases/shorten_url_usecase.dart';
 
@@ -35,4 +36,8 @@ final shortenUrlUseCaseProvider = Provider<ShortenUrlUseCase>((ref) {
 
 final getHistoryUseCaseProvider = Provider<GetHistoryUseCase>((ref) {
   return GetHistoryUseCase(ref.watch(urlRepositoryProvider));
+});
+
+final deleteHistoryUseCaseProvider = Provider<DeleteHistoryUseCase>((ref) {
+  return DeleteHistoryUseCase(ref.watch(urlRepositoryProvider));
 });

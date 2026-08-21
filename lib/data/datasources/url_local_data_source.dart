@@ -23,6 +23,14 @@ class UrlLocalDataSource {
     await _prefs.setString(_historyKey, jsonEncode(history));
   }
 
+  Future<void> deleteUrl(String shortUrl) async {
+    final List<Map<String, dynamic>> history = _readStored()
+        .where((ShortUrlModel item) => item.shortUrl != shortUrl)
+        .map((ShortUrlModel item) => item.toJson())
+        .toList();
+    await _prefs.setString(_historyKey, jsonEncode(history));
+  }
+
   List<ShortUrlModel> _readStored() {
     final String? raw = _prefs.getString(_historyKey);
     if (raw == null || raw.isEmpty) {
