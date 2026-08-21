@@ -5,4 +5,16 @@ class ShortUrlModel extends ShortUrlEntity {
     required super.originalUrl,
     required super.shortUrl,
   });
+
+  factory ShortUrlModel.fromJson(Map<String, dynamic> json) {
+    return ShortUrlModel(
+      originalUrl: json['originalUrl'] as String,
+      shortUrl: json['shortUrl'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'originalUrl': originalUrl,
+        'shortUrl': shortUrl,
+      };
 }
