@@ -1,19 +1,4 @@
-File dokumentasi yang lu maksud itu namanya **`README.md`** (Read Me Markdown).
-
-Di dunia *software engineering*, `README.md` itu ibarat **halaman depan toko atau papan sambutan utama** dari sebuah *repository*. Kalau orang lain, HRD, atau *recruiter* buka GitHub lu, dokumen inilah yang pertama kali mereka baca untuk menilai seberapa profesional lu sebagai *developer*.
-
-Tentu saja gue bisa buatkan dokumen `README.md` yang lengkap, profesional, berstandar industri, dan disesuaikan secara pas dengan fitur-fitur aplikasi *URL Shortener* yang baru saja kita bangun bersama (Clean Architecture, Riverpod, Firebase Firestore, TinyURL API, & QR Code).
-
-Berikut adalah teks `README.md` lengkap yang bisa langsung lu *copy* dan *paste* ke dalam file baru bernama **`README.md`** di dalam folder utama project `short_url` lu:
-
-```markdown
-# 🚀 Flutter URL Shortener App
-
-A modern, production-ready **URL Shortener Application** built with Flutter, implementing strict **Clean Architecture** principles and state management using **Riverpod**. It features secure cloud persistence with **Firebase Firestore**, live short link generation via **TinyURL API**, local fallback mechanisms, and built-in **QR Code generation**.
-
----
-
-## ✨ Features
+##  Features
 
 - **🔗 Smart URL Shortening:** Generates reliable short links using the TinyURL API, with a local fallback mechanism to ensure offline robustness.
 - **☁️ Cloud Persistence:** Automatically syncs and saves all generated URL history to **Firebase Firestore** in real-time.
