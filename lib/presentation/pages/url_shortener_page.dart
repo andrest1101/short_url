@@ -48,7 +48,7 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
           ),
         );
       case ShortenResult.success:
-        break;
+        _urlController.clear();
     }
   }
 
@@ -61,22 +61,21 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
 
   Future<void> _openInBrowser(String url) async {
     final Uri uri = Uri.parse(url);
-    try {
-      final bool launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
+    for (final LaunchMode mode in <LaunchMode>[
+      LaunchMode.externalApplication,
+      LaunchMode.inAppBrowserView,
+    ]) {
+      try {
+        final bool launched = await launchUrl(uri, mode: mode);
+        if (launched) return;
+      } catch (_) {
+        continue;
+      }
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak bisa membuka link')),
       );
-      if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak bisa membuka link')),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak bisa membuka link')),
-        );
-      }
     }
   }
 
