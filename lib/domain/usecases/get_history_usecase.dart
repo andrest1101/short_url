@@ -6,7 +6,7 @@ class GetHistoryUseCase {
 
   const GetHistoryUseCase(this._repository);
 
-  List<ShortUrlEntity> call() {
+  Future<List<ShortUrlEntity>> call() {
     return _repository.loadHistory();
   }
 }

@@ -1,9 +1,9 @@
 import '../entities/short_url_entity.dart';
 
 abstract interface class IUrlRepository {
-  ShortUrlEntity shortenUrl(String originalUrl);
+  Future<ShortUrlEntity> shortenUrl(String originalUrl);
 
-  List<ShortUrlEntity> loadHistory();
+  Future<List<ShortUrlEntity>> loadHistory();
 
-  void deleteHistory(String shortUrl);
+  Future<void> deleteHistory(String shortUrl);
 }

@@ -1,29 +1,30 @@
-import 'dart:async';
-
 import '../../domain/entities/short_url_entity.dart';
 import '../../domain/repositories/url_repository.dart';
+import '../datasources/firebase_url_data_source.dart';
 import '../datasources/mock_url_data_source.dart';
-import '../datasources/url_local_data_source.dart';
 import '../models/short_url_model.dart';
 
 class UrlRepositoryImpl implements IUrlRepository {
   final MockUrlDataSource _dataSource;
-  final UrlLocalDataSource _localDataSource;
+  final FirebaseUrlDataSource _remoteDataSource;
 
-  const UrlRepositoryImpl(this._dataSource, this._localDataSource);
+  const UrlRepositoryImpl(this._dataSource, this._remoteDataSource);
 
   @override
-  ShortUrlEntity shortenUrl(String originalUrl) {
+  Future<ShortUrlEntity> shortenUrl(String originalUrl) async {
     final ShortUrlModel model = _dataSource.generateShortUrl(originalUrl);
-    unawaited(_localDataSource.addUrl(model));
+    await _remoteDataSource.addUrl(model);
     return model;
   }
 
   @override
-  List<ShortUrlEntity> loadHistory() => _localDataSource.loadHistory();
+  Future<List<ShortUrlEntity>> loadHistory() async {
+    final List<ShortUrlModel> history = await _remoteDataSource.getHistory();
+    return List<ShortUrlEntity>.from(history);
+  }
 
   @override
-  void deleteHistory(String shortUrl) {
-    unawaited(_localDataSource.deleteUrl(shortUrl));
+  Future<void> deleteHistory(String shortUrl) {
+    return _remoteDataSource.deleteUrl(shortUrl);
   }
 }

@@ -9,7 +9,7 @@ class ShortenUrlUseCase {
 
   const ShortenUrlUseCase(this._repository, this._validator);
 
-  ShortUrlEntity call(String originalUrl) {
+  Future<ShortUrlEntity> call(String originalUrl) async {
     final String? normalizedUrl = _validator.normalize(originalUrl);
     if (normalizedUrl == null) {
       throw InvalidUrlException(originalUrl);

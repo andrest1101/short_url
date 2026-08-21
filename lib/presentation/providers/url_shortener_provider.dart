@@ -7,32 +7,46 @@ import '../../domain/usecases/get_history_usecase.dart';
 import '../../domain/usecases/shorten_url_usecase.dart';
 import '../../injection.dart';
 
+enum ShortenResult { success, invalidUrl, failure }
+
 final urlHistoryNotifierProvider =
-    NotifierProvider<UrlHistoryNotifier, List<ShortUrlEntity>>(
+    AsyncNotifierProvider<UrlHistoryNotifier, List<ShortUrlEntity>>(
   UrlHistoryNotifier.new,
 );
 
-class UrlHistoryNotifier extends Notifier<List<ShortUrlEntity>> {
+class UrlHistoryNotifier extends AsyncNotifier<List<ShortUrlEntity>> {
   @override
-  List<ShortUrlEntity> build() {
+  Future<List<ShortUrlEntity>> build() {
     final GetHistoryUseCase useCase = ref.watch(getHistoryUseCaseProvider);
     return useCase();
   }
 
-  bool shorten(String originalUrl) {
+  Future<ShortenResult> shorten(String originalUrl) async {
     final ShortenUrlUseCase useCase = ref.read(shortenUrlUseCaseProvider);
     try {
-      final ShortUrlEntity result = useCase(originalUrl);
-      state = [result, ...state];
-      return true;
+      final ShortUrlEntity result = await useCase(originalUrl);
+      final List<ShortUrlEntity> current = state.value ?? const [];
+      state = AsyncData([result, ...current]);
+      return ShortenResult.success;
     } on InvalidUrlException {
-      return false;
+      return ShortenResult.invalidUrl;
+    } catch (_) {
+      return ShortenResult.failure;
     }
   }
 
-  void delete(ShortUrlEntity item) {
+  Future<bool> delete(ShortUrlEntity item) async {
     final DeleteHistoryUseCase useCase = ref.read(deleteHistoryUseCaseProvider);
-    useCase(item.shortUrl);
-    state = state.where((ShortUrlEntity entry) => entry != item).toList();
+    final List<ShortUrlEntity> previous = state.value ?? const [];
+    state = AsyncData(
+      previous.where((ShortUrlEntity entry) => entry != item).toList(),
+    );
+    try {
+      await useCase(item.shortUrl);
+      return true;
+    } catch (_) {
+      state = AsyncData(previous);
+      return false;
+    }
   }
 }

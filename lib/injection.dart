@@ -1,8 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import 'data/datasources/firebase_url_data_source.dart';
 import 'data/datasources/mock_url_data_source.dart';
-import 'data/datasources/url_local_data_source.dart';
 import 'data/repositories/url_repository_impl.dart';
 import 'domain/repositories/url_repository.dart';
 import 'domain/usecases/delete_history_usecase.dart';
@@ -10,24 +10,22 @@ import 'domain/usecases/get_history_usecase.dart';
 import 'domain/usecases/shorten_url_usecase.dart';
 import 'domain/utils/url_validator.dart';
 
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError(
-    'sharedPreferencesProvider harus di-override di main.dart',
-  );
+final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
 });
 
 final mockUrlDataSourceProvider = Provider<MockUrlDataSource>((ref) {
   return MockUrlDataSource();
 });
 
-final urlLocalDataSourceProvider = Provider<UrlLocalDataSource>((ref) {
-  return UrlLocalDataSource(ref.watch(sharedPreferencesProvider));
+final firebaseUrlDataSourceProvider = Provider<FirebaseUrlDataSource>((ref) {
+  return FirebaseUrlDataSource(ref.watch(firestoreProvider));
 });
 
 final urlRepositoryProvider = Provider<IUrlRepository>((ref) {
   return UrlRepositoryImpl(
     ref.watch(mockUrlDataSourceProvider),
-    ref.watch(urlLocalDataSourceProvider),
+    ref.watch(firebaseUrlDataSourceProvider),
   );
 });
 

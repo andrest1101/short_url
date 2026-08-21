@@ -15,25 +15,39 @@ class UrlShortenerPage extends ConsumerStatefulWidget {
 
 class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
   final TextEditingController _urlController = TextEditingController();
+  bool _isShortening = false;
 
-  void _shortenUrl() {
-    final input = _urlController.text.trim();
+  Future<void> _shortenUrl() async {
+    if (_isShortening) return;
+    final String input = _urlController.text.trim();
     if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('URL tidak boleh kosong')),
       );
       return;
     }
-    final bool success =
-        ref.read(urlHistoryNotifierProvider.notifier).shorten(input);
-    if (!success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'URL tidak valid. Gunakan format https://... atau www...',
+    setState(() => _isShortening = true);
+    final ShortenResult result =
+        await ref.read(urlHistoryNotifierProvider.notifier).shorten(input);
+    if (!mounted) return;
+    setState(() => _isShortening = false);
+    switch (result) {
+      case ShortenResult.invalidUrl:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'URL tidak valid. Gunakan format https://... atau www...',
+            ),
           ),
-        ),
-      );
+        );
+      case ShortenResult.failure:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menyimpan. Periksa koneksi internet Anda'),
+          ),
+        );
+      case ShortenResult.success:
+        break;
     }
   }
 
@@ -44,10 +58,14 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
     );
   }
 
-  void _onHistoryDismissed(ShortUrlEntity item) {
-    ref.read(urlHistoryNotifierProvider.notifier).delete(item);
+  Future<void> _onHistoryDismissed(ShortUrlEntity item) async {
+    final bool success =
+        await ref.read(urlHistoryNotifierProvider.notifier).delete(item);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Riwayat dihapus')),
+      SnackBar(
+        content: Text(success ? 'Riwayat dihapus' : 'Gagal menghapus riwayat'),
+      ),
     );
   }
 
@@ -73,6 +91,97 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
     );
   }
 
+  Widget _buildErrorSection(ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 48, color: colorScheme.error),
+          const SizedBox(height: 12),
+          Text(
+            'Gagal memuat riwayat',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Periksa koneksi internet Anda',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () => ref.invalidate(urlHistoryNotifierProvider),
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Coba Lagi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistorySection(
+    List<ShortUrlEntity> history,
+    ColorScheme colorScheme,
+  ) {
+    if (history.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 28),
+        Row(
+          children: [
+            Icon(Icons.history, color: colorScheme.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Riwayat',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '(${history.length})',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: history.length,
+          itemBuilder: (context, index) {
+            final ShortUrlEntity item = history[index];
+            return Dismissible(
+              key: ValueKey<String>(item.shortUrl),
+              direction: DismissDirection.horizontal,
+              background: _buildDismissBackground(
+                colorScheme,
+                Alignment.centerLeft,
+              ),
+              secondaryBackground: _buildDismissBackground(
+                colorScheme,
+                Alignment.centerRight,
+              ),
+              onDismissed: (_) => _onHistoryDismissed(item),
+              child: _HistoryItemCard(
+                item: item,
+                onCopy: () => _copyToClipboard(item.shortUrl),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _urlController.dispose();
@@ -82,7 +191,7 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final List<ShortUrlEntity> history =
+    final AsyncValue<List<ShortUrlEntity>> historyAsync =
         ref.watch(urlHistoryNotifierProvider);
     return Scaffold(
       appBar: AppBar(
@@ -148,7 +257,7 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
                       SizedBox(
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: _shortenUrl,
+                          onPressed: _isShortening ? null : _shortenUrl,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,
@@ -163,61 +272,32 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          child: const Text('Shorten'),
+                          child: _isShortening
+                              ? SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                )
+                              : const Text('Shorten'),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              if (history.isNotEmpty) ...[
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    Icon(Icons.history, color: colorScheme.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Riwayat',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '(${history.length})',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
+              historyAsync.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 48),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
-                const SizedBox(height: 12),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: history.length,
-                  itemBuilder: (context, index) {
-                    final ShortUrlEntity item = history[index];
-                    return Dismissible(
-                      key: ValueKey<String>(item.shortUrl),
-                      direction: DismissDirection.horizontal,
-                      background: _buildDismissBackground(
-                        colorScheme,
-                        Alignment.centerLeft,
-                      ),
-                      secondaryBackground: _buildDismissBackground(
-                        colorScheme,
-                        Alignment.centerRight,
-                      ),
-                      onDismissed: (_) => _onHistoryDismissed(item),
-                      child: _HistoryItemCard(
-                        item: item,
-                        onCopy: () => _copyToClipboard(item.shortUrl),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                error: (Object error, StackTrace stackTrace) =>
+                    _buildErrorSection(colorScheme),
+                data: (List<ShortUrlEntity> history) =>
+                    _buildHistorySection(history, colorScheme),
+              ),
               const SizedBox(height: 16),
             ],
           ),

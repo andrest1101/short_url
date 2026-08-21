@@ -14,6 +14,7 @@ class MockUrlDataSource {
     return ShortUrlModel(
       originalUrl: originalUrl,
       shortUrl: '$_baseUrl${_generateCode(_codeLength)}',
+      createdAt: DateTime.now(),
     );
   }
 

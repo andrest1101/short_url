@@ -5,7 +5,7 @@ class DeleteHistoryUseCase {
 
   const DeleteHistoryUseCase(this._repository);
 
-  void call(String shortUrl) {
-    _repository.deleteHistory(shortUrl);
+  Future<void> call(String shortUrl) {
+    return _repository.deleteHistory(shortUrl);
   }
 }
