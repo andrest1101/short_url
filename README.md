@@ -98,18 +98,4 @@ To run this project locally on your machine, follow these steps:
 
 *If you find this project helpful or interesting, feel free to give it a ⭐️ star on GitHub!*
 
-```
 
----
-
-### Cara Memasukkannya ke GitHub Lu:
-1. Buka folder *project* `short_url` lu di VS Code.
-2. Buat file baru di dalam folder utama (sejajar dengan folder `lib` dan file `pubspec.yaml`), beri nama **`README.md`**.
-3. *Paste* teks di atas ke dalam file tersebut, lalu *save*.
-4. Commit dan Push ke GitHub lu pakai perintah terminal:
-   
-```bash
-   git add README.md
-   git commit -m "docs: add professional README.md"
-   git push origin main
-   
