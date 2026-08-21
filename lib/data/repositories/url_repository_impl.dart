@@ -1,18 +1,18 @@
 import '../../domain/entities/short_url_entity.dart';
 import '../../domain/repositories/url_repository.dart';
 import '../datasources/firebase_url_data_source.dart';
-import '../datasources/mock_url_data_source.dart';
+import '../datasources/tiny_url_api_data_source.dart';
 import '../models/short_url_model.dart';
 
 class UrlRepositoryImpl implements IUrlRepository {
-  final MockUrlDataSource _dataSource;
+  final TinyUrlApiDataSource _apiDataSource;
   final FirebaseUrlDataSource _remoteDataSource;
 
-  const UrlRepositoryImpl(this._dataSource, this._remoteDataSource);
+  const UrlRepositoryImpl(this._apiDataSource, this._remoteDataSource);
 
   @override
   Future<ShortUrlEntity> shortenUrl(String originalUrl) async {
-    final ShortUrlModel model = _dataSource.generateShortUrl(originalUrl);
+    final ShortUrlModel model = await _apiDataSource.shorten(originalUrl);
     await _remoteDataSource.addUrl(model);
     return model;
   }

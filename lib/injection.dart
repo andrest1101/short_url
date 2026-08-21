@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import 'data/datasources/firebase_url_data_source.dart';
-import 'data/datasources/mock_url_data_source.dart';
+import 'data/datasources/tiny_url_api_data_source.dart';
 import 'data/repositories/url_repository_impl.dart';
 import 'domain/repositories/url_repository.dart';
 import 'domain/usecases/delete_history_usecase.dart';
@@ -14,8 +15,12 @@ final firestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
 });
 
-final mockUrlDataSourceProvider = Provider<MockUrlDataSource>((ref) {
-  return MockUrlDataSource();
+final httpClientProvider = Provider<http.Client>((ref) {
+  return http.Client();
+});
+
+final tinyUrlApiDataSourceProvider = Provider<TinyUrlApiDataSource>((ref) {
+  return TinyUrlApiDataSource(ref.watch(httpClientProvider));
 });
 
 final firebaseUrlDataSourceProvider = Provider<FirebaseUrlDataSource>((ref) {
@@ -24,7 +29,7 @@ final firebaseUrlDataSourceProvider = Provider<FirebaseUrlDataSource>((ref) {
 
 final urlRepositoryProvider = Provider<IUrlRepository>((ref) {
   return UrlRepositoryImpl(
-    ref.watch(mockUrlDataSourceProvider),
+    ref.watch(tinyUrlApiDataSourceProvider),
     ref.watch(firebaseUrlDataSourceProvider),
   );
 });

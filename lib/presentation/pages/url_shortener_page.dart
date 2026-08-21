@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/entities/short_url_entity.dart';
 import '../providers/url_shortener_provider.dart';
@@ -56,6 +57,27 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Link pendek disalin')),
     );
+  }
+
+  Future<void> _openInBrowser(String url) async {
+    final Uri uri = Uri.parse(url);
+    try {
+      final bool launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak bisa membuka link')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak bisa membuka link')),
+        );
+      }
+    }
   }
 
   Future<void> _onHistoryDismissed(ShortUrlEntity item) async {
@@ -174,6 +196,7 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
               child: _HistoryItemCard(
                 item: item,
                 onCopy: () => _copyToClipboard(item.shortUrl),
+                onOpen: () => _openInBrowser(item.shortUrl),
               ),
             );
           },
@@ -310,10 +333,12 @@ class _UrlShortenerPageState extends ConsumerState<UrlShortenerPage> {
 class _HistoryItemCard extends StatefulWidget {
   final ShortUrlEntity item;
   final VoidCallback onCopy;
+  final VoidCallback onOpen;
 
   const _HistoryItemCard({
     required this.item,
     required this.onCopy,
+    required this.onOpen,
   });
 
   @override
@@ -373,6 +398,12 @@ class _HistoryItemCardState extends State<_HistoryItemCard> {
                   color: _showQr
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant,
+                ),
+                IconButton(
+                  onPressed: widget.onOpen,
+                  icon: const Icon(Icons.open_in_new),
+                  tooltip: 'Buka di browser',
+                  color: colorScheme.primary,
                 ),
                 IconButton(
                   onPressed: widget.onCopy,
