@@ -240,14 +240,6 @@ Contoh dokumen:
 
 ---
 
-## 📸 Screenshot
-
-> Antarmuka bersih dan minimalis dengan panduan desain Material 3.
-
-*(Screenshot akan segera ditambahkan)*
-
----
-
 ## 🗺️ Roadmap
 
 - [ ] Local caching / offline fallback untuk riwayat link
